@@ -15,6 +15,22 @@
   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #16130f;
+  --surface: #221d18;
+  --ink: #f3ede5;
+  --muted: #a89c90;
+  --accent: #ff6b5f;
+  --accent-ink: #1a0f0d;
+  --border: #362e26;
+  --green: #3ecb82;
+  --green-bg: #12321f;
+  --red: #ff6b5f;
+  --red-bg: #3a1815;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -129,55 +145,136 @@ button {
   }
 }
 
-.settings-tabs {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 10px;
+.settings-section + .settings-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 
-.settings-tab {
-  border: none;
-  background: var(--bg);
+.settings-section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
   color: var(--muted);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0 0 8px;
 }
 
-.settings-tab.active {
-  background: var(--ink);
-  color: #fff;
-}
-
-.category-picker {
+.settings-accordion-toggle {
+  width: 100%;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.chip {
-  border: 1px solid var(--border);
-  background: var(--bg);
+  align-items: center;
+  justify-content: space-between;
+  border: none;
+  background: none;
+  padding: 2px;
+  font-size: 0.92rem;
+  font-weight: 700;
   color: var(--ink);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.15s ease;
 }
 
-.chip.active {
+.settings-accordion-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.settings-accordion-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.settings-chevron {
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.settings-accordion-toggle.open .settings-chevron {
+  transform: rotate(180deg);
+}
+
+.settings-accordion-body {
+  margin-top: 10px;
+}
+
+.settings-reset-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding-top: 12px;
+  border: none;
+  border-top: 1px solid var(--border);
+  background: none;
+  color: var(--red);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.category-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: none;
+  color: var(--ink);
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.category-row-all {
+  font-weight: 700;
+}
+
+.category-list-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 2px 6px;
+}
+
+.category-check {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+  border-radius: 5px;
+  position: relative;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.category-row.active .category-check {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--accent-ink);
 }
 
-.chip-all {
-  font-weight: 700;
+.category-row.active .category-check::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 .difficulty-picker {
@@ -200,7 +297,7 @@ button {
 .difficulty-btn.active {
   background: var(--ink);
   border-color: var(--ink);
-  color: #fff;
+  color: var(--bg);
 }
 
 /* ---------- Stage ---------- */
@@ -223,6 +320,61 @@ button {
   justify-content: center;
   min-height: 100vh;
   font-size: 1.1rem;
+  color: var(--muted);
+}
+
+/* ---------- Difficulty gate (pre-game screen) ---------- */
+
+.difficulty-gate {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 28px 20px 60px;
+  text-align: center;
+}
+
+.difficulty-gate-hint {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.difficulty-gate-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(380px, 100%);
+}
+
+.difficulty-gate-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 22px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+
+.difficulty-gate-option:active {
+  transform: scale(0.97);
+}
+
+.difficulty-gate-option-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.difficulty-gate-option-hint {
+  font-size: 0.88rem;
   color: var(--muted);
 }
 
@@ -321,9 +473,9 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   border-radius: 14px;
-  padding: 8px 20px;
+  padding: 10px 20px;
   font-weight: 700;
   width: min(420px, 100%);
 }
@@ -380,7 +532,7 @@ button {
 
 .slot.filled {
   border-color: var(--ink);
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
 }
 
@@ -565,6 +717,32 @@ button {
   justify-content: flex-start;
   padding: 48px 20px;
   gap: 36px;
+  position: relative;
+}
+
+.home-settings {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 6;
+}
+
+.build-hash {
+  position: fixed;
+  right: 10px;
+  bottom: 8px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  opacity: 0.4;
+  text-decoration: none;
+  font-family: monospace;
+  transition: opacity 0.15s ease;
+}
+
+@media (hover: hover) {
+  .build-hash:hover {
+    opacity: 0.9;
+  }
 }
 
 .home-hero {
@@ -641,14 +819,21 @@ button {
 /* ---------- Hover states (mouse/desktop only) ---------- */
 
 @media (hover: hover) {
-  .chip:hover {
-    border-color: var(--ink);
+  .category-row:hover {
+    background: var(--bg);
   }
   .difficulty-btn:hover:not(.active) {
     border-color: var(--ink);
   }
-  .settings-tab:hover:not(.active) {
-    color: var(--ink);
+  .settings-accordion-toggle:hover {
+    color: var(--accent);
+  }
+  .settings-reset-btn:hover {
+    opacity: 0.75;
+  }
+  .difficulty-gate-option:hover {
+    border-color: var(--ink);
+    transform: translateY(-2px);
   }
   .letter-card:hover:not(:disabled) {
     border-color: var(--ink);

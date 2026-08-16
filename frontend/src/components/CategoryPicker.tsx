@@ -28,22 +28,25 @@ export function CategoryPicker({ categories, selected, onChange }: Props) {
   }
 
   return (
-    <div className="category-picker">
+    <div className="category-list">
       <button
-        className={`chip chip-all ${allSelected ? "active" : ""}`}
-        onClick={toggleAll}
         type="button"
+        className={`category-row category-row-all ${allSelected ? "active" : ""}`}
+        onClick={toggleAll}
       >
-        Все темы
+        <span className="category-check" aria-hidden="true" />
+        <span>Все темы</span>
       </button>
+      <div className="category-list-divider" />
       {categories.map((c) => (
         <button
           key={c.slug}
-          className={`chip ${selected.has(c.slug) ? "active" : ""}`}
-          onClick={() => toggle(c.slug)}
           type="button"
+          className={`category-row ${selected.has(c.slug) ? "active" : ""}`}
+          onClick={() => toggle(c.slug)}
         >
-          {c.name}
+          <span className="category-check" aria-hidden="true" />
+          <span>{c.name}</span>
         </button>
       ))}
     </div>
