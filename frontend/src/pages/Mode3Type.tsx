@@ -16,7 +16,7 @@ function normalize(s: string): string {
 }
 
 const CORRECT_DELAY_MS = 1900;
-const WRONG_DELAY_MS = 1100;
+const WRONG_DELAY_MS = 1900;
 
 export default function Mode3Type() {
   const { categories, words, loading, error } = useData();
@@ -85,11 +85,7 @@ export default function Mode3Type() {
       setFeedback("wrong");
       setWrongCount((c) => c + 1);
       setStreak(0);
-      timeoutRef.current = window.setTimeout(() => {
-        setValue("");
-        setFeedback("idle");
-        inputRef.current?.focus();
-      }, WRONG_DELAY_MS);
+      timeoutRef.current = window.setTimeout(() => loadWord(next()), WRONG_DELAY_MS);
     }
   }
 
