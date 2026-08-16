@@ -47,7 +47,7 @@ class GeorgianLetter(models.Model):
 
 
 class Word(models.Model):
-    georgian_text = models.CharField(max_length=100)
+    georgian_text = models.CharField(max_length=100, unique=True)
     ru_translit = models.CharField(
         max_length=150,
         help_text="Как слово читается по-русски (авто-генерируется из букв, но можно поправить)",

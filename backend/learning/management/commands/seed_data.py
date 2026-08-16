@@ -189,8 +189,11 @@ class Command(BaseCommand):
                 ru_translit = "".join(translit_map.get(ch, ch) for ch in georgian_text)
                 Word.objects.update_or_create(
                     georgian_text=georgian_text,
-                    category=category,
-                    defaults={"ru_translit": ru_translit, "translation_ru": translation},
+                    defaults={
+                        "ru_translit": ru_translit,
+                        "translation_ru": translation,
+                        "category": category,
+                    },
                 )
                 total_words += 1
         self.stdout.write(self.style.SUCCESS(f"Слов: {total_words}"))
