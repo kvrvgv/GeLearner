@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="app-shell home">
       <div className="home-hero">
-        <h1 className="home-title">GeLerner</h1>
+        <h1 className="home-title">GeLearner</h1>
         <p className="home-subtitle">Учим грузинский алфавит</p>
         {!loading && (
           <p className="home-stats">
