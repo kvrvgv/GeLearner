@@ -450,6 +450,10 @@ button {
   background: radial-gradient(ellipse at center, transparent 45%, rgba(211, 52, 45, 0.45) 100%);
 }
 
+.screen-flash-invalid {
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(230, 145, 20, 0.45) 100%);
+}
+
 @keyframes flash-fade {
   0% {
     opacity: 0;
@@ -494,7 +498,12 @@ button {
   color: var(--red);
 }
 
-.feedback-title {
+.feedback-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.feedback-reading {
   font-size: 1.05rem;
 }
 
@@ -578,6 +587,10 @@ button {
   justify-content: center;
   gap: 10px;
   width: min(600px, 100%);
+}
+
+.card-grid.invalid-shake {
+  animation: shake 0.5s ease-in-out;
 }
 
 .letter-card {

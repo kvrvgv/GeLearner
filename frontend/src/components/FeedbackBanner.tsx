@@ -14,13 +14,10 @@ export function FeedbackBanner({ state, reading, translation }: Props) {
 
   return (
     <div className={`feedback-banner ${state}`}>
-      <span className="feedback-title">{isCorrect ? "Верно! ✓" : "Неверно ✕"}</span>
-      {reading && (
-        <span className="feedback-reading">
-          {isCorrect ? "Читается: " : "Правильно: "}
-          {reading}
-        </span>
-      )}
+      <span className="feedback-icon" aria-label={isCorrect ? "Верно" : "Неверно"}>
+        {isCorrect ? "✓" : "✕"}
+      </span>
+      {reading && <span className="feedback-reading">{reading}</span>}
       {translation && <span className="feedback-translation">{translation}</span>}
     </div>
   );
