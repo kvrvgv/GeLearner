@@ -12,7 +12,7 @@ import { ScreenFlash } from "../components/ScreenFlash";
 import { StatsBar } from "../components/StatsBar";
 import { DifficultyGate } from "../components/DifficultyGate";
 import { useTheme } from "../hooks/useTheme";
-import type { Word } from "../types";
+import type { Word, WordLevelFilter } from "../types";
 
 type Difficulty = "no_extra" | "with_extra";
 
@@ -54,6 +54,7 @@ export default function Mode1Spell() {
   const { categories, words, lettersByChar, letters, loading, error } = useData();
 
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [wordLevel, setWordLevel] = useState<WordLevelFilter>("all");
   const [difficulty, setDifficulty] = useState<Difficulty>("no_extra");
   const [difficultyChosen, setDifficultyChosen] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
@@ -69,8 +70,11 @@ export default function Mode1Spell() {
   }, [categories, selectedCategories.size]);
 
   const filteredWords = useMemo(
-    () => words.filter((w) => selectedCategories.has(w.category)),
-    [words, selectedCategories]
+    () =>
+      words.filter(
+        (w) => selectedCategories.has(w.category) && (wordLevel === "all" || w.level === wordLevel)
+      ),
+    [words, selectedCategories, wordLevel]
   );
 
   const { next } = useShuffledQueue<Word>(filteredWords);
@@ -300,6 +304,21 @@ export default function Mode1Spell() {
                   categories={categories}
                   selected={selectedCategories}
                   onChange={setSelectedCategories}
+                />
+              ),
+            },
+            {
+              key: "level",
+              label: "Уровень слов",
+              content: (
+                <DifficultyPicker
+                  value={wordLevel}
+                  onChange={setWordLevel}
+                  options={[
+                    { value: "all", label: "Все" },
+                    { value: "basic", label: "Базовые" },
+                    { value: "advanced", label: "Сложные" },
+                  ]}
                 />
               ),
             },

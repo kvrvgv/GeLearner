@@ -14,12 +14,16 @@ export interface Letter {
   order: number;
 }
 
+export type WordLevel = "basic" | "advanced";
+
 export interface Word {
   id: number;
   georgian_text: string;
   ru_translit: string;
   translation_ru: string;
   category: string;
+  level: WordLevel;
 }
 
 export type Difficulty = "easy" | "medium" | "hard";
+export type WordLevelFilter = "all" | WordLevel;
