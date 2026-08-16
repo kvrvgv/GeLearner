@@ -11,6 +11,7 @@ import { ScreenFlash } from "../components/ScreenFlash";
 import { StatsBar } from "../components/StatsBar";
 import { DifficultyGate } from "../components/DifficultyGate";
 import { useTheme } from "../hooks/useTheme";
+import { useAutoAdvance } from "../hooks/useAutoAdvance";
 import type { Word } from "../types";
 
 const PHRASE_CATEGORY = "voprosy";
@@ -63,6 +64,7 @@ export default function Mode5Phrase() {
   const [streak, setStreak] = useState(0);
   const [invalidPulse, setInvalidPulse] = useState(0);
   const { theme, setTheme } = useTheme();
+  const { autoAdvance, setAutoAdvance } = useAutoAdvance();
 
   const filteredWords = useMemo(
     () => words.filter((w) => w.category === PHRASE_CATEGORY),
@@ -80,6 +82,9 @@ export default function Mode5Phrase() {
 
   const allTranslits = useMemo(() => letters.map((l) => l.ru_translit), [letters]);
 
+  const poolRef = useRef<Card[]>([]);
+  const answerRef = useRef<AnswerSlot[]>([]);
+
   function loadWord(w: Word | null) {
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     if (!w) {
@@ -88,10 +93,14 @@ export default function Mode5Phrase() {
     }
     const toks = tokenizeWord(w.georgian_text, lettersByChar);
     const chunks = requiredChunks(toks);
+    const newPool = buildPool(chunks, allTranslits, difficulty);
+    const newAnswer: AnswerSlot[] = Array(chunks.length).fill(null);
     setWord(w);
     setTokens(toks);
-    setPool(buildPool(chunks, allTranslits, difficulty));
-    setAnswer(Array(chunks.length).fill(null));
+    setPool(newPool);
+    poolRef.current = newPool;
+    setAnswer(newAnswer);
+    answerRef.current = newAnswer;
     setFeedback("idle");
   }
 
@@ -119,6 +128,20 @@ export default function Mode5Phrase() {
 
   const targetLength = requiredChunks(tokens).length;
 
+  const slotGroups = useMemo(() => {
+    const groups: number[][] = [[]];
+    let idx = 0;
+    for (const t of tokens) {
+      if (t.type === "letter") {
+        groups[groups.length - 1].push(idx);
+        idx += 1;
+      } else if (/\s/.test(t.char) && groups[groups.length - 1].length > 0) {
+        groups.push([]);
+      }
+    }
+    return groups.filter((g) => g.length > 0);
+  }, [tokens]);
+
   function reconstruct(tiles: AnswerSlot[]): string {
     let i = 0;
     let out = "";
@@ -135,11 +158,16 @@ export default function Mode5Phrase() {
 
   function handleCardTap(card: Card) {
     if (feedback !== "idle" || card.used) return;
-    const emptyIndex = answer.findIndex((t) => t === null);
+    const currentAnswer = answerRef.current;
+    const emptyIndex = currentAnswer.findIndex((t) => t === null);
     if (emptyIndex === -1) return;
 
-    setPool((prev) => prev.map((c) => (c.uid === card.uid ? { ...c, used: true } : c)));
-    const nextAnswer = answer.map((t, i) => (i === emptyIndex ? { uid: card.uid, text: card.text } : t));
+    const nextPool = poolRef.current.map((c) => (c.uid === card.uid ? { ...c, used: true } : c));
+    poolRef.current = nextPool;
+    setPool(nextPool);
+
+    const nextAnswer = currentAnswer.map((t, i) => (i === emptyIndex ? { uid: card.uid, text: card.text } : t));
+    answerRef.current = nextAnswer;
     setAnswer(nextAnswer);
 
     if (nextAnswer.every((t) => t !== null) && word) {
@@ -148,22 +176,38 @@ export default function Mode5Phrase() {
         setFeedback("correct");
         setCorrectCount((c) => c + 1);
         setStreak((s) => s + 1);
-        timeoutRef.current = window.setTimeout(() => loadWord(next()), CORRECT_DELAY_MS);
+        if (autoAdvance) {
+          timeoutRef.current = window.setTimeout(() => loadWord(next()), CORRECT_DELAY_MS);
+        }
       } else {
         setFeedback("wrong");
         setWrongCount((c) => c + 1);
         setStreak(0);
-        timeoutRef.current = window.setTimeout(() => loadWord(next()), WRONG_DELAY_MS);
+        if (autoAdvance) {
+          timeoutRef.current = window.setTimeout(() => loadWord(next()), WRONG_DELAY_MS);
+        }
       }
     }
   }
 
+  function advanceManually() {
+    if (feedback === "idle") return;
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    loadWord(next());
+  }
+
   function handleTileTap(index: number) {
     if (feedback !== "idle") return;
-    const tile = answer[index];
+    const tile = answerRef.current[index];
     if (!tile) return;
-    setAnswer((prev) => prev.map((t, i) => (i === index ? null : t)));
-    setPool((prev) => prev.map((c) => (c.uid === tile.uid ? { ...c, used: false } : c)));
+
+    const nextAnswer = answerRef.current.map((t, i) => (i === index ? null : t));
+    answerRef.current = nextAnswer;
+    setAnswer(nextAnswer);
+
+    const nextPool = poolRef.current.map((c) => (c.uid === tile.uid ? { ...c, used: false } : c));
+    poolRef.current = nextPool;
+    setPool(nextPool);
   }
 
   const pendingKeyRef = useRef<{ char: string; timer: number } | null>(null);
@@ -172,7 +216,7 @@ export default function Mode5Phrase() {
     if (feedback !== "idle" || !word) return;
 
     function tryMatch(text: string) {
-      const card = pool.find((c) => !c.used && c.text.toLowerCase() === text);
+      const card = poolRef.current.find((c) => !c.used && c.text.toLowerCase() === text);
       if (card) {
         handleCardTap(card);
       } else {
@@ -197,21 +241,21 @@ export default function Mode5Phrase() {
           pendingKeyRef.current = null;
           return;
         }
-        const lastFilled = answer.findLastIndex((t) => t !== null);
+        const lastFilled = answerRef.current.findLastIndex((t) => t !== null);
         if (lastFilled !== -1) handleTileTap(lastFilled);
         return;
       }
 
       const key = e.key.toLowerCase();
       if (!/^[а-яё]$/.test(key)) return;
-      if (!answer.some((t) => t === null)) return;
+      if (!answerRef.current.some((t) => t === null)) return;
 
       const pending = pendingKeyRef.current;
       if (pending) {
         window.clearTimeout(pending.timer);
         pendingKeyRef.current = null;
         const combined = pending.char + key;
-        const combinedCard = pool.find((c) => !c.used && c.text.toLowerCase() === combined);
+        const combinedCard = poolRef.current.find((c) => !c.used && c.text.toLowerCase() === combined);
         if (combinedCard) {
           handleCardTap(combinedCard);
           return;
@@ -219,7 +263,7 @@ export default function Mode5Phrase() {
         tryMatch(pending.char);
       }
 
-      const couldStartDigraph = pool.some(
+      const couldStartDigraph = poolRef.current.some(
         (c) => !c.used && c.text.length > 1 && c.text.toLowerCase().startsWith(key)
       );
 
@@ -244,6 +288,21 @@ export default function Mode5Phrase() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, answer, feedback, word, targetLength]);
 
+  useEffect(() => {
+    if (autoAdvance || feedback === "idle") return;
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === " " || e.code === "Space") {
+        e.preventDefault();
+        advanceManually();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoAdvance, feedback]);
+
   if (!difficultyChosen) {
     return (
       <div className="app-shell">
@@ -253,8 +312,8 @@ export default function Mode5Phrase() {
         </header>
         <DifficultyGate
           options={[
-            { value: "no_extra", label: "Без лишних слов", hint: "Только нужные слова" },
-            { value: "with_extra", label: "С лишними словами", hint: "Есть отвлекающие варианты" },
+            { value: "no_extra", label: "Без лишних букв", hint: "Только нужные буквы" },
+            { value: "with_extra", label: "С лишними буквами", hint: "Есть отвлекающие варианты" },
           ]}
           onSelect={(v) => {
             setDifficulty(v);
@@ -285,8 +344,22 @@ export default function Mode5Phrase() {
                   value={difficulty}
                   onChange={setDifficulty}
                   options={[
-                    { value: "no_extra", label: "Без лишних слов" },
-                    { value: "with_extra", label: "С лишними словами" },
+                    { value: "no_extra", label: "Без лишних букв" },
+                    { value: "with_extra", label: "С лишними буквами" },
+                  ]}
+                />
+              ),
+            },
+            {
+              key: "advance",
+              label: "Переход к следующей фразе",
+              content: (
+                <DifficultyPicker
+                  value={autoAdvance ? "on" : "off"}
+                  onChange={(v) => setAutoAdvance(v === "on")}
+                  options={[
+                    { value: "on", label: "Автоматически" },
+                    { value: "off", label: "Вручную" },
                   ]}
                 />
               ),
@@ -322,23 +395,33 @@ export default function Mode5Phrase() {
         <div className="word-display">{word.georgian_text}</div>
 
         <div className={`answer-slots ${feedback}`}>
-          {Array.from({ length: targetLength }).map((_, i) => {
-            const tile = answer[i];
-            return (
-              <button
-                key={i}
-                type="button"
-                className={`slot ${tile ? "filled" : ""}`}
-                onClick={() => tile && handleTileTap(i)}
-                disabled={!tile}
-              >
-                {tile?.text ?? ""}
-              </button>
-            );
-          })}
+          {slotGroups.map((group, gi) => (
+            <div className="word-group" key={gi}>
+              {group.map((i) => {
+                const tile = answer[i];
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`slot ${tile ? "filled" : ""}`}
+                    onClick={() => tile && handleTileTap(i)}
+                    disabled={!tile}
+                  >
+                    {tile?.text ?? ""}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
         <FeedbackBanner state={feedback} reading={word.ru_translit} translation={word.translation_ru} />
+
+        {feedback !== "idle" && !autoAdvance && (
+          <div className="advance-hint">
+            Нажмите пробел или коснитесь экрана, чтобы перейти к следующей фразе
+          </div>
+        )}
 
         <div
           className={`card-grid ${invalidPulse > 0 ? "invalid-shake" : ""}`}
@@ -356,6 +439,15 @@ export default function Mode5Phrase() {
             </button>
           ))}
         </div>
+
+        {feedback !== "idle" && !autoAdvance && (
+          <button
+            type="button"
+            className="advance-overlay"
+            onClick={advanceManually}
+            aria-label="Перейти к следующей фразе"
+          />
+        )}
       </div>
     </div>
   );
