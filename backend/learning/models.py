@@ -47,6 +47,11 @@ class GeorgianLetter(models.Model):
 
 
 class Word(models.Model):
+    LEVEL_CHOICES = [
+        ("basic", "Базовый"),
+        ("advanced", "Сложный"),
+    ]
+
     georgian_text = models.CharField(max_length=100, unique=True)
     ru_translit = models.CharField(
         max_length=150,
@@ -56,6 +61,7 @@ class Word(models.Model):
     category = models.ForeignKey(
         Category, related_name="words", on_delete=models.CASCADE
     )
+    level = models.CharField(max_length=10, choices=LEVEL_CHOICES, default="basic")
 
     class Meta:
         ordering = ["category__order", "georgian_text"]

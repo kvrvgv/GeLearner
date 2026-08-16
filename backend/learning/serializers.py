@@ -20,4 +20,4 @@ class WordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Word
-        fields = ["id", "georgian_text", "ru_translit", "translation_ru", "category"]
+        fields = ["id", "georgian_text", "ru_translit", "translation_ru", "category", "level"]
