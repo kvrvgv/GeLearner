@@ -13,6 +13,9 @@ import type { Word } from "../types";
 
 type Difficulty = "no_extra" | "with_extra";
 
+const CORRECT_DELAY_MS = 1900;
+const WRONG_DELAY_MS = 1100;
+
 interface Card {
   uid: string;
   text: string;
@@ -126,14 +129,14 @@ export default function Mode1Spell() {
       const guess = reconstruct(nextAnswer);
       if (guess === word.ru_translit) {
         setFeedback("correct");
-        timeoutRef.current = window.setTimeout(() => loadWord(next()), 1900);
+        timeoutRef.current = window.setTimeout(() => loadWord(next()), CORRECT_DELAY_MS);
       } else {
         setFeedback("wrong");
         timeoutRef.current = window.setTimeout(() => {
           setPool((prev) => prev.map((c) => ({ ...c, used: false })));
           setAnswer([]);
           setFeedback("idle");
-        }, 1100);
+        }, WRONG_DELAY_MS);
       }
     }
   }
@@ -185,7 +188,10 @@ export default function Mode1Spell() {
         />
       </header>
 
-      <ScreenFlash state={feedback} />
+      <ScreenFlash
+        state={feedback}
+        durationMs={feedback === "correct" ? CORRECT_DELAY_MS : WRONG_DELAY_MS}
+      />
 
       <div className="stage">
         <div className="word-display">{word.georgian_text}</div>

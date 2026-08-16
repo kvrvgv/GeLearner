@@ -12,6 +12,9 @@ function normalize(s: string): string {
   return s.trim().toLowerCase().replace(/\s+/g, " ").replace(/ё/g, "е");
 }
 
+const CORRECT_DELAY_MS = 1900;
+const WRONG_DELAY_MS = 1100;
+
 export default function Mode3Type() {
   const { categories, words, loading, error } = useData();
 
@@ -59,14 +62,14 @@ export default function Mode3Type() {
     if (feedback !== "idle" || !word || value.trim() === "") return;
     if (normalize(value) === normalize(word.ru_translit)) {
       setFeedback("correct");
-      timeoutRef.current = window.setTimeout(() => loadWord(next()), 1900);
+      timeoutRef.current = window.setTimeout(() => loadWord(next()), CORRECT_DELAY_MS);
     } else {
       setFeedback("wrong");
       timeoutRef.current = window.setTimeout(() => {
         setValue("");
         setFeedback("idle");
         inputRef.current?.focus();
-      }, 1100);
+      }, WRONG_DELAY_MS);
     }
   }
 
@@ -96,7 +99,10 @@ export default function Mode3Type() {
         />
       </header>
 
-      <ScreenFlash state={feedback} />
+      <ScreenFlash
+        state={feedback}
+        durationMs={feedback === "correct" ? CORRECT_DELAY_MS : WRONG_DELAY_MS}
+      />
 
       <div className="stage">
         <div className="word-display">{word.georgian_text}</div>

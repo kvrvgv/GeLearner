@@ -287,22 +287,28 @@ button {
   inset: 0;
   pointer-events: none;
   z-index: 50;
-  animation: flash-fade 0.7s ease-out forwards;
+  animation: flash-fade var(--flash-duration, 1.3s) ease-in-out forwards;
 }
 
 .screen-flash-correct {
-  background: radial-gradient(ellipse at center, transparent 45%, rgba(31, 157, 85, 0.4) 100%);
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(31, 157, 85, 0.45) 100%);
 }
 
 .screen-flash-wrong {
-  background: radial-gradient(ellipse at center, transparent 45%, rgba(211, 52, 45, 0.4) 100%);
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(211, 52, 45, 0.45) 100%);
 }
 
 @keyframes flash-fade {
-  from {
+  0% {
+    opacity: 0;
+  }
+  18% {
     opacity: 1;
   }
-  to {
+  65% {
+    opacity: 0.9;
+  }
+  100% {
     opacity: 0;
   }
 }
@@ -392,7 +398,7 @@ button {
   border-color: var(--red);
   background: var(--red-bg);
   color: var(--red);
-  animation: shake 0.3s ease;
+  animation: shake 0.55s ease-in-out;
 }
 
 @keyframes shake {
@@ -400,11 +406,17 @@ button {
   100% {
     transform: translateX(0);
   }
-  25% {
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
     transform: translateX(-4px);
   }
-  75% {
-    transform: translateX(4px);
+  80% {
+    transform: translateX(3px);
   }
 }
 
@@ -490,7 +502,7 @@ button {
   border-color: var(--red);
   background: var(--red-bg);
   color: var(--red);
-  animation: shake 0.3s ease;
+  animation: shake 0.55s ease-in-out;
 }
 
 /* ---------- Mode 3: text input ---------- */
@@ -527,7 +539,7 @@ button {
 .text-input-row.wrong .big-input {
   border-color: var(--red);
   color: var(--red);
-  animation: shake 0.3s ease;
+  animation: shake 0.55s ease-in-out;
 }
 
 .check-btn {
