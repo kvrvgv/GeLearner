@@ -24,7 +24,8 @@ class GeorgianLetterAdmin(admin.ModelAdmin):
 
 @admin.register(Word)
 class WordAdmin(admin.ModelAdmin):
-    list_display = ("georgian_text", "ru_translit", "translation_ru", "category")
-    list_filter = ("category",)
+    list_display = ("georgian_text", "ru_translit", "translation_ru", "category", "level")
+    list_filter = ("category", "level")
+    list_editable = ("level",)
     search_fields = ("georgian_text", "ru_translit", "translation_ru")
     autocomplete_fields = ("category",)
