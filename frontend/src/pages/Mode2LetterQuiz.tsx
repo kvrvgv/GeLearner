@@ -9,6 +9,9 @@ import { StatsBar } from "../components/StatsBar";
 import { pickLetterOptions, type LetterDifficulty } from "../utils/letterOptions";
 import type { Letter } from "../types";
 
+const CORRECT_DELAY_MS = 1400;
+const WRONG_DELAY_MS = 1500;
+
 export default function Mode2LetterQuiz() {
   const { letters, loading, error } = useData();
   const [difficulty, setDifficulty] = useState<LetterDifficulty>("easy");
@@ -53,12 +56,12 @@ export default function Mode2LetterQuiz() {
       setStatus("correct");
       setCorrectCount((c) => c + 1);
       setStreak((s) => s + 1);
-      timeoutRef.current = window.setTimeout(() => loadLetter(next()), 1200);
+      timeoutRef.current = window.setTimeout(() => loadLetter(next()), CORRECT_DELAY_MS);
     } else {
       setStatus("wrong");
       setWrongCount((c) => c + 1);
       setStreak(0);
-      timeoutRef.current = window.setTimeout(() => loadLetter(next()), 1500);
+      timeoutRef.current = window.setTimeout(() => loadLetter(next()), WRONG_DELAY_MS);
     }
   }
 
@@ -92,7 +95,10 @@ export default function Mode2LetterQuiz() {
         />
       </header>
 
-      <ScreenFlash state={status} />
+      <ScreenFlash
+        state={status}
+        durationMs={status === "correct" ? CORRECT_DELAY_MS : WRONG_DELAY_MS}
+      />
 
       <StatsBar correct={correctCount} wrong={wrongCount} streak={streak} />
 

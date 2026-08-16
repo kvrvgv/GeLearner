@@ -1,8 +1,14 @@
+import type { CSSProperties } from "react";
+
 interface Props {
   state: "idle" | "correct" | "wrong";
+  durationMs?: number;
 }
 
-export function ScreenFlash({ state }: Props) {
+export function ScreenFlash({ state, durationMs }: Props) {
   if (state === "idle") return null;
-  return <div className={`screen-flash screen-flash-${state}`} aria-hidden="true" />;
+  const style = durationMs
+    ? ({ "--flash-duration": `${durationMs}ms` } as CSSProperties)
+    : undefined;
+  return <div className={`screen-flash screen-flash-${state}`} style={style} aria-hidden="true" />;
 }
