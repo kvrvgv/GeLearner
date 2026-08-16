@@ -882,6 +882,10 @@ button {
   .home-modes {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .home-modes .mode-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }
 
 /* ---------- Hover states (mouse/desktop only) ---------- */

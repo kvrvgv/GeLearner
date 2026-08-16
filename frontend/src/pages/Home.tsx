@@ -76,6 +76,14 @@ export default function Home() {
             Найди пару: грузинское слово и его перевод
           </span>
         </Link>
+
+        <Link to="/mode5" className="mode-card">
+          <span className="mode-card-emoji">💬</span>
+          <span className="mode-card-title">Собери фразу</span>
+          <span className="mode-card-desc">
+            Полезные вопросы и фразы — по буквам, как в режиме 1
+          </span>
+        </Link>
       </div>
     </div>
   );
