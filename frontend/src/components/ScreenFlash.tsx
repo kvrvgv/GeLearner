@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 
 interface Props {
-  state: "idle" | "correct" | "wrong";
+  state: "idle" | "correct" | "wrong" | "invalid";
   durationMs?: number;
 }
 

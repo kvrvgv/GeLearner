@@ -59,6 +59,7 @@ export default function Mode1Spell() {
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [invalidPulse, setInvalidPulse] = useState(0);
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -169,6 +170,83 @@ export default function Mode1Spell() {
     setPool((prev) => prev.map((c) => (c.uid === tile.uid ? { ...c, used: false } : c)));
   }
 
+  const pendingKeyRef = useRef<{ char: string; timer: number } | null>(null);
+
+  useEffect(() => {
+    if (feedback !== "idle" || !word) return;
+
+    function tryMatch(text: string) {
+      const card = pool.find((c) => !c.used && c.text.toLowerCase() === text);
+      if (card) {
+        handleCardTap(card);
+      } else {
+        setInvalidPulse((n) => n + 1);
+      }
+    }
+
+    function resolvePending() {
+      const pending = pendingKeyRef.current;
+      if (!pending) return;
+      pendingKeyRef.current = null;
+      tryMatch(pending.char);
+    }
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      if (e.key === "Backspace") {
+        e.preventDefault();
+        if (pendingKeyRef.current) {
+          window.clearTimeout(pendingKeyRef.current.timer);
+          pendingKeyRef.current = null;
+          return;
+        }
+        if (answer.length > 0) handleTileTap(answer.length - 1);
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+      if (!/^[а-яё]$/.test(key)) return;
+      if (answer.length >= targetLength) return;
+
+      const pending = pendingKeyRef.current;
+      if (pending) {
+        window.clearTimeout(pending.timer);
+        pendingKeyRef.current = null;
+        const combined = pending.char + key;
+        const combinedCard = pool.find((c) => !c.used && c.text.toLowerCase() === combined);
+        if (combinedCard) {
+          handleCardTap(combinedCard);
+          return;
+        }
+        tryMatch(pending.char);
+      }
+
+      const couldStartDigraph = pool.some(
+        (c) => !c.used && c.text.length > 1 && c.text.toLowerCase().startsWith(key)
+      );
+
+      if (couldStartDigraph) {
+        pendingKeyRef.current = {
+          char: key,
+          timer: window.setTimeout(resolvePending, 350),
+        };
+      } else {
+        tryMatch(key);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      if (pendingKeyRef.current) {
+        window.clearTimeout(pendingKeyRef.current.timer);
+        pendingKeyRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pool, answer, feedback, word, targetLength]);
+
   if (!difficultyChosen) {
     return (
       <div className="app-shell">
@@ -252,6 +330,7 @@ export default function Mode1Spell() {
         state={feedback}
         durationMs={feedback === "correct" ? CORRECT_DELAY_MS : WRONG_DELAY_MS}
       />
+      {invalidPulse > 0 && <ScreenFlash key={invalidPulse} state="invalid" durationMs={500} />}
 
       <StatsBar correct={correctCount} wrong={wrongCount} streak={streak} />
 
@@ -277,7 +356,10 @@ export default function Mode1Spell() {
 
         <FeedbackBanner state={feedback} reading={word.ru_translit} translation={word.translation_ru} />
 
-        <div className="card-grid">
+        <div
+          className={`card-grid ${invalidPulse > 0 ? "invalid-shake" : ""}`}
+          key={invalidPulse}
+        >
           {pool.map((card) => (
             <button
               key={card.uid}
