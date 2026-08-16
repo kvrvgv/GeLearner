@@ -63,4 +63,4 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "curl -fsS -o /dev/null -w 'gunicorn -> HTTP %{http_code}\n' http://127.0.0.1:8731/api/categories/ && sudo systemctl is-active gelerner"
+            "curl -fsS -H 'Host: ge.zlgvpn.org' -o /dev/null -w 'gunicorn -> HTTP %{http_code}\n' http://127.0.0.1:8731/api/categories/ && sudo systemctl is-active gelerner"
