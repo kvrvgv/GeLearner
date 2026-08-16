@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import { useShuffledQueue } from "../hooks/useShuffledQueue";
 import { DifficultyPicker } from "../components/DifficultyPicker";
+import { SettingsMenu } from "../components/SettingsMenu";
+import { ScreenFlash } from "../components/ScreenFlash";
+import { StatsBar } from "../components/StatsBar";
 import { pickLetterOptions, type LetterDifficulty } from "../utils/letterOptions";
 import type { Letter } from "../types";
 
@@ -15,6 +18,9 @@ export default function Mode2LetterQuiz() {
   const [options, setOptions] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "correct" | "wrong">("idle");
+  const [correctCount, setCorrectCount] = useState(0);
+  const [wrongCount, setWrongCount] = useState(0);
+  const [streak, setStreak] = useState(0);
   const timeoutRef = useRef<number | null>(null);
 
   function loadLetter(l: Letter | null) {
@@ -28,6 +34,9 @@ export default function Mode2LetterQuiz() {
 
   useEffect(() => {
     if (letters.length > 0) loadLetter(next());
+    setCorrectCount(0);
+    setWrongCount(0);
+    setStreak(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [letters, difficulty]);
 
@@ -42,13 +51,14 @@ export default function Mode2LetterQuiz() {
     setSelected(text);
     if (text === letter.ru_translit) {
       setStatus("correct");
+      setCorrectCount((c) => c + 1);
+      setStreak((s) => s + 1);
       timeoutRef.current = window.setTimeout(() => loadLetter(next()), 1200);
     } else {
       setStatus("wrong");
-      timeoutRef.current = window.setTimeout(() => {
-        setStatus("idle");
-        setSelected(null);
-      }, 900);
+      setWrongCount((c) => c + 1);
+      setStreak(0);
+      timeoutRef.current = window.setTimeout(() => loadLetter(next()), 1500);
     }
   }
 
@@ -61,19 +71,30 @@ export default function Mode2LetterQuiz() {
       <header className="topbar">
         <Link to="/" className="back-btn">← Меню</Link>
         <h1 className="mode-title">Как читается буква?</h1>
-      </header>
-
-      <div className="settings-panel">
-        <DifficultyPicker
-          value={difficulty}
-          onChange={setDifficulty}
-          options={[
-            { value: "easy", label: "Уровень 1" },
-            { value: "medium", label: "Уровень 2" },
-            { value: "hard", label: "Уровень 3" },
+        <SettingsMenu
+          tabs={[
+            {
+              key: "difficulty",
+              label: "Сложность",
+              content: (
+                <DifficultyPicker
+                  value={difficulty}
+                  onChange={setDifficulty}
+                  options={[
+                    { value: "easy", label: "Уровень 1" },
+                    { value: "medium", label: "Уровень 2" },
+                    { value: "hard", label: "Уровень 3" },
+                  ]}
+                />
+              ),
+            },
           ]}
         />
-      </div>
+      </header>
+
+      <ScreenFlash state={status} />
+
+      <StatsBar correct={correctCount} wrong={wrongCount} streak={streak} />
 
       <div className="stage">
         <div className="letter-display">{letter.char}</div>
@@ -81,7 +102,8 @@ export default function Mode2LetterQuiz() {
         <div className="options-grid">
           {options.map((opt) => {
             let cls = "option-btn";
-            if (selected === opt && status === "correct") cls += " correct";
+            const isCorrectOpt = opt === letter.ru_translit;
+            if (status !== "idle" && isCorrectOpt) cls += " correct";
             if (selected === opt && status === "wrong") cls += " wrong";
             return (
               <button
