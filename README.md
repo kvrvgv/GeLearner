@@ -1,4 +1,4 @@
-# GeLerner
+# GeLearner
 
 Веб-приложение для изучения грузинского алфавита. Бэкенд — Django + Django REST
 Framework, фронтенд — React (Vite + TypeScript).
