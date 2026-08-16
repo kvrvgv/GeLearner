@@ -6,6 +6,8 @@ import { DifficultyPicker } from "../components/DifficultyPicker";
 import { SettingsMenu } from "../components/SettingsMenu";
 import { ScreenFlash } from "../components/ScreenFlash";
 import { StatsBar } from "../components/StatsBar";
+import { DifficultyGate } from "../components/DifficultyGate";
+import { useTheme } from "../hooks/useTheme";
 import { pickLetterOptions, type LetterDifficulty } from "../utils/letterOptions";
 import type { Letter } from "../types";
 
@@ -15,6 +17,7 @@ const WRONG_DELAY_MS = 1500;
 export default function Mode2LetterQuiz() {
   const { letters, loading, error } = useData();
   const [difficulty, setDifficulty] = useState<LetterDifficulty>("easy");
+  const [difficultyChosen, setDifficultyChosen] = useState(false);
   const { next } = useShuffledQueue<Letter>(letters);
 
   const [letter, setLetter] = useState<Letter | null>(null);
@@ -24,6 +27,7 @@ export default function Mode2LetterQuiz() {
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
   const [streak, setStreak] = useState(0);
+  const { theme, setTheme } = useTheme();
   const timeoutRef = useRef<number | null>(null);
 
   function loadLetter(l: Letter | null) {
@@ -49,6 +53,12 @@ export default function Mode2LetterQuiz() {
     };
   }, []);
 
+  function resetStats() {
+    setCorrectCount(0);
+    setWrongCount(0);
+    setStreak(0);
+  }
+
   function handlePick(text: string) {
     if (status !== "idle" || !letter) return;
     setSelected(text);
@@ -65,6 +75,28 @@ export default function Mode2LetterQuiz() {
     }
   }
 
+  if (!difficultyChosen) {
+    return (
+      <div className="app-shell">
+        <header className="topbar">
+          <Link to="/" className="back-btn">← Меню</Link>
+          <h1 className="mode-title">Как читается буква?</h1>
+        </header>
+        <DifficultyGate
+          options={[
+            { value: "easy", label: "Уровень 1", hint: "Простые варианты" },
+            { value: "medium", label: "Уровень 2", hint: "Есть похожие буквы" },
+            { value: "hard", label: "Уровень 3", hint: "Максимум путаницы" },
+          ]}
+          onSelect={(v) => {
+            setDifficulty(v);
+            setDifficultyChosen(true);
+          }}
+        />
+      </div>
+    );
+  }
+
   if (loading) return <div className="stage-center">Загрузка...</div>;
   if (error) return <div className="stage-center">Ошибка: {error}</div>;
   if (!letter) return <div className="stage-center">Нет букв</div>;
@@ -75,7 +107,8 @@ export default function Mode2LetterQuiz() {
         <Link to="/" className="back-btn">← Меню</Link>
         <h1 className="mode-title">Как читается буква?</h1>
         <SettingsMenu
-          tabs={[
+          onResetStats={resetStats}
+          sections={[
             {
               key: "difficulty",
               label: "Сложность",
@@ -87,6 +120,21 @@ export default function Mode2LetterQuiz() {
                     { value: "easy", label: "Уровень 1" },
                     { value: "medium", label: "Уровень 2" },
                     { value: "hard", label: "Уровень 3" },
+                  ]}
+                />
+              ),
+            },
+            {
+              key: "theme",
+              label: "Оформление",
+              content: (
+                <DifficultyPicker
+                  value={theme}
+                  onChange={setTheme}
+                  options={[
+                    { value: "light", label: "Светлая" },
+                    { value: "dark", label: "Тёмная" },
+                    { value: "auto", label: "Авто" },
                   ]}
                 />
               ),

@@ -2,24 +2,26 @@ export type FeedbackState = "idle" | "correct" | "wrong";
 
 interface Props {
   state: FeedbackState;
+  /** ru_translit — how the Georgian word actually reads */
+  reading?: string;
   translation?: string;
 }
 
-export function FeedbackBanner({ state, translation }: Props) {
+export function FeedbackBanner({ state, reading, translation }: Props) {
   if (state === "idle") return <div className="feedback-banner idle" />;
 
-  if (state === "correct") {
-    return (
-      <div className="feedback-banner correct">
-        <span className="feedback-title">Верно! ✓</span>
-        {translation && <span className="feedback-translation">{translation}</span>}
-      </div>
-    );
-  }
+  const isCorrect = state === "correct";
 
   return (
-    <div className="feedback-banner wrong">
-      <span className="feedback-title">Неверно ✕</span>
+    <div className={`feedback-banner ${state}`}>
+      <span className="feedback-title">{isCorrect ? "Верно! ✓" : "Неверно ✕"}</span>
+      {reading && (
+        <span className="feedback-reading">
+          {isCorrect ? "Читается: " : "Правильно: "}
+          {reading}
+        </span>
+      )}
+      {translation && <span className="feedback-translation">{translation}</span>}
     </div>
   );
 }

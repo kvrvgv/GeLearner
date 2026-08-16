@@ -1,11 +1,37 @@
 import { Link } from "react-router-dom";
 import { useData } from "../context/DataContext";
+import { SettingsMenu } from "../components/SettingsMenu";
+import { DifficultyPicker } from "../components/DifficultyPicker";
+import { useTheme } from "../hooks/useTheme";
 
 export default function Home() {
   const { words, letters, loading } = useData();
+  const { theme, setTheme } = useTheme();
 
   return (
     <div className="app-shell home">
+      <div className="home-settings">
+        <SettingsMenu
+          sections={[
+            {
+              key: "theme",
+              label: "Оформление",
+              content: (
+                <DifficultyPicker
+                  value={theme}
+                  onChange={setTheme}
+                  options={[
+                    { value: "light", label: "Светлая" },
+                    { value: "dark", label: "Тёмная" },
+                    { value: "auto", label: "Авто" },
+                  ]}
+                />
+              ),
+            },
+          ]}
+        />
+      </div>
+
       <div className="home-hero">
         <h1 className="home-title">GeLearner</h1>
         <p className="home-subtitle">Учим грузинский алфавит</p>
@@ -41,6 +67,15 @@ export default function Home() {
           </span>
         </Link>
       </div>
+
+      <a
+        href={`https://github.com/kvrvgv/GeLearner/commit/${__COMMIT_HASH__}`}
+        target="_blank"
+        rel="noreferrer"
+        className="build-hash"
+      >
+        {__COMMIT_HASH__}
+      </a>
     </div>
   );
 }

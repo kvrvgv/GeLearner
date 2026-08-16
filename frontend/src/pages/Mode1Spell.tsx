@@ -9,6 +9,9 @@ import { DifficultyPicker } from "../components/DifficultyPicker";
 import { FeedbackBanner, type FeedbackState } from "../components/FeedbackBanner";
 import { SettingsMenu } from "../components/SettingsMenu";
 import { ScreenFlash } from "../components/ScreenFlash";
+import { StatsBar } from "../components/StatsBar";
+import { DifficultyGate } from "../components/DifficultyGate";
+import { useTheme } from "../hooks/useTheme";
 import type { Word } from "../types";
 
 type Difficulty = "no_extra" | "with_extra";
@@ -52,6 +55,11 @@ export default function Mode1Spell() {
 
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [difficulty, setDifficulty] = useState<Difficulty>("no_extra");
+  const [difficultyChosen, setDifficultyChosen] = useState(false);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [wrongCount, setWrongCount] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     if (categories.length > 0 && selectedCategories.size === 0) {
@@ -94,8 +102,17 @@ export default function Mode1Spell() {
     if (filteredWords.length > 0 && lettersByChar.size > 0) {
       loadWord(next());
     }
+    setCorrectCount(0);
+    setWrongCount(0);
+    setStreak(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredWords, lettersByChar, difficulty]);
+
+  function resetStats() {
+    setCorrectCount(0);
+    setWrongCount(0);
+    setStreak(0);
+  }
 
   useEffect(() => {
     return () => {
@@ -129,9 +146,13 @@ export default function Mode1Spell() {
       const guess = reconstruct(nextAnswer);
       if (guess === word.ru_translit) {
         setFeedback("correct");
+        setCorrectCount((c) => c + 1);
+        setStreak((s) => s + 1);
         timeoutRef.current = window.setTimeout(() => loadWord(next()), CORRECT_DELAY_MS);
       } else {
         setFeedback("wrong");
+        setWrongCount((c) => c + 1);
+        setStreak(0);
         timeoutRef.current = window.setTimeout(() => {
           setPool((prev) => prev.map((c) => ({ ...c, used: false })));
           setAnswer([]);
@@ -148,6 +169,27 @@ export default function Mode1Spell() {
     setPool((prev) => prev.map((c) => (c.uid === tile.uid ? { ...c, used: false } : c)));
   }
 
+  if (!difficultyChosen) {
+    return (
+      <div className="app-shell">
+        <header className="topbar">
+          <Link to="/" className="back-btn">← Меню</Link>
+          <h1 className="mode-title">Собери слово по буквам</h1>
+        </header>
+        <DifficultyGate
+          options={[
+            { value: "no_extra", label: "Без лишних букв", hint: "Только нужные буквы" },
+            { value: "with_extra", label: "С лишними буквами", hint: "Есть отвлекающие варианты" },
+          ]}
+          onSelect={(v) => {
+            setDifficulty(v);
+            setDifficultyChosen(true);
+          }}
+        />
+      </div>
+    );
+  }
+
   if (loading) return <div className="stage-center">Загрузка...</div>;
   if (error) return <div className="stage-center">Ошибка: {error}</div>;
   if (!word) return <div className="stage-center">Нет слов для выбранных тем</div>;
@@ -158,18 +200,8 @@ export default function Mode1Spell() {
         <Link to="/" className="back-btn">← Меню</Link>
         <h1 className="mode-title">Собери слово по буквам</h1>
         <SettingsMenu
-          tabs={[
-            {
-              key: "topics",
-              label: "Темы",
-              content: (
-                <CategoryPicker
-                  categories={categories}
-                  selected={selectedCategories}
-                  onChange={setSelectedCategories}
-                />
-              ),
-            },
+          onResetStats={resetStats}
+          sections={[
             {
               key: "difficulty",
               label: "Сложность",
@@ -184,6 +216,34 @@ export default function Mode1Spell() {
                 />
               ),
             },
+            {
+              key: "topics",
+              label: "Темы",
+              collapsible: true,
+              badge: `${selectedCategories.size}/${categories.length}`,
+              content: (
+                <CategoryPicker
+                  categories={categories}
+                  selected={selectedCategories}
+                  onChange={setSelectedCategories}
+                />
+              ),
+            },
+            {
+              key: "theme",
+              label: "Оформление",
+              content: (
+                <DifficultyPicker
+                  value={theme}
+                  onChange={setTheme}
+                  options={[
+                    { value: "light", label: "Светлая" },
+                    { value: "dark", label: "Тёмная" },
+                    { value: "auto", label: "Авто" },
+                  ]}
+                />
+              ),
+            },
           ]}
         />
       </header>
@@ -192,6 +252,8 @@ export default function Mode1Spell() {
         state={feedback}
         durationMs={feedback === "correct" ? CORRECT_DELAY_MS : WRONG_DELAY_MS}
       />
+
+      <StatsBar correct={correctCount} wrong={wrongCount} streak={streak} />
 
       <div className="stage">
         <div className="word-display">{word.georgian_text}</div>
@@ -213,7 +275,7 @@ export default function Mode1Spell() {
           })}
         </div>
 
-        <FeedbackBanner state={feedback} translation={word.translation_ru} />
+        <FeedbackBanner state={feedback} reading={word.ru_translit} translation={word.translation_ru} />
 
         <div className="card-grid">
           {pool.map((card) => (
