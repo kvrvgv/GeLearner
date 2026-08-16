@@ -423,24 +423,24 @@ export default function Mode5Phrase() {
           </div>
         )}
 
-        <div
-          className={`card-grid ${invalidPulse > 0 ? "invalid-shake" : ""}`}
-          key={invalidPulse}
-        >
-          {pool.map((card) => (
-            <button
-              key={card.uid}
-              type="button"
-              className={`letter-card ${card.used ? "used" : ""} ${
-                !card.used && feedback !== "idle" && !autoAdvance ? "hidden-unused" : ""
-              }`}
-              onClick={() => handleCardTap(card)}
-              disabled={card.used || feedback !== "idle"}
-            >
-              {card.text}
-            </button>
-          ))}
-        </div>
+        {(autoAdvance || feedback === "idle") && (
+          <div
+            className={`card-grid ${invalidPulse > 0 ? "invalid-shake" : ""}`}
+            key={invalidPulse}
+          >
+            {pool.map((card) => (
+              <button
+                key={card.uid}
+                type="button"
+                className={`letter-card ${card.used ? "used" : ""}`}
+                onClick={() => handleCardTap(card)}
+                disabled={card.used || feedback !== "idle"}
+              >
+                {card.text}
+              </button>
+            ))}
+          </div>
+        )}
 
         {feedback !== "idle" && !autoAdvance && (
           <button
