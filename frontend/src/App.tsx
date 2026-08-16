@@ -6,6 +6,7 @@ import Mode1Spell from "./pages/Mode1Spell";
 import Mode2LetterQuiz from "./pages/Mode2LetterQuiz";
 import Mode3Type from "./pages/Mode3Type";
 import Mode4Match from "./pages/Mode4Match";
+import Mode5Phrase from "./pages/Mode5Phrase";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/mode2" element={<Mode2LetterQuiz />} />
         <Route path="/mode3" element={<Mode3Type />} />
         <Route path="/mode4" element={<Mode4Match />} />
+        <Route path="/mode5" element={<Mode5Phrase />} />
       </Routes>
       <BuildHash />
     </DataProvider>
