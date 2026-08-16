@@ -799,8 +799,8 @@ button {
 
 .build-hash {
   position: fixed;
-  right: calc(10px + env(safe-area-inset-right));
-  bottom: calc(4px + env(safe-area-inset-bottom) * 0.35);
+  right: calc(56px + env(safe-area-inset-right));
+  bottom: calc(6px + env(safe-area-inset-bottom) * 0.35);
   z-index: 4;
   font-size: 0.7rem;
   color: var(--muted);
