@@ -2,17 +2,17 @@
   <rect width="100" height="100" fill="#ffffff"/>
   <rect x="0" y="40" width="100" height="20" fill="#d3342d"/>
   <rect x="40" y="0" width="20" height="100" fill="#d3342d"/>
-  <g font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="9.5" fill="#ffffff" text-anchor="middle">
+  <g font-family="'Noto Sans Georgian', 'DejaVu Sans', Sylfaen, Arial, sans-serif" font-weight="700" font-size="9.5" fill="#ffffff" text-anchor="middle">
     <rect x="7" y="7" width="26" height="26" rx="7" fill="#d3342d"/>
-    <text x="20" y="23.3">дж</text>
+    <text x="20" y="24.3">ჯ</text>
 
     <rect x="67" y="7" width="26" height="26" rx="7" fill="#d3342d"/>
-    <text x="80" y="23.3">гх</text>
+    <text x="80" y="24.3">ღ</text>
 
     <rect x="7" y="67" width="26" height="26" rx="7" fill="#d3342d"/>
-    <text x="20" y="83.3">къ</text>
+    <text x="20" y="84.3">ყ</text>
 
     <rect x="67" y="67" width="26" height="26" rx="7" fill="#d3342d"/>
-    <text x="80" y="83.3">дз</text>
+    <text x="80" y="84.3">ძ</text>
   </g>
 </svg>
