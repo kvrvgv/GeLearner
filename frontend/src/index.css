@@ -744,6 +744,7 @@ button {
   position: fixed;
   right: 10px;
   bottom: 8px;
+  z-index: 4;
   font-size: 0.7rem;
   color: var(--muted);
   opacity: 0.4;

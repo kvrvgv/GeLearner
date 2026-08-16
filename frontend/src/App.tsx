@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { DataProvider } from "./context/DataContext";
+import { BuildHash } from "./components/BuildHash";
 import Home from "./pages/Home";
 import Mode1Spell from "./pages/Mode1Spell";
 import Mode2LetterQuiz from "./pages/Mode2LetterQuiz";
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/mode2" element={<Mode2LetterQuiz />} />
         <Route path="/mode3" element={<Mode3Type />} />
       </Routes>
+      <BuildHash />
     </DataProvider>
   );
 }
