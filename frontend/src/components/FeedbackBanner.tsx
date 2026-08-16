@@ -1,3 +1,5 @@
+import { addStress } from "../utils/stress";
+
 export type FeedbackState = "idle" | "correct" | "wrong";
 
 interface Props {
@@ -17,7 +19,7 @@ export function FeedbackBanner({ state, reading, translation }: Props) {
       <span className="feedback-icon" aria-label={isCorrect ? "Верно" : "Неверно"}>
         {isCorrect ? "✓" : "✕"}
       </span>
-      {reading && <span className="feedback-reading">{reading}</span>}
+      {reading && <span className="feedback-reading">{addStress(reading)}</span>}
       {translation && <span className="feedback-translation">{translation}</span>}
     </div>
   );
