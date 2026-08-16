@@ -17,7 +17,7 @@ import type { Word } from "../types";
 type Difficulty = "no_extra" | "with_extra";
 
 const CORRECT_DELAY_MS = 1900;
-const WRONG_DELAY_MS = 1100;
+const WRONG_DELAY_MS = 1900;
 
 interface Card {
   uid: string;
@@ -154,11 +154,7 @@ export default function Mode1Spell() {
         setFeedback("wrong");
         setWrongCount((c) => c + 1);
         setStreak(0);
-        timeoutRef.current = window.setTimeout(() => {
-          setPool((prev) => prev.map((c) => ({ ...c, used: false })));
-          setAnswer([]);
-          setFeedback("idle");
-        }, WRONG_DELAY_MS);
+        timeoutRef.current = window.setTimeout(() => loadWord(next()), WRONG_DELAY_MS);
       }
     }
   }
