@@ -73,17 +73,84 @@ button {
   font-size: 1.05rem;
   margin: 0;
   font-weight: 700;
+  flex: 1;
 }
 
-/* ---------- Settings panel ---------- */
+/* ---------- Settings menu (burger) ---------- */
 
-.settings-panel {
+.settings-menu {
+  position: relative;
+  margin-left: auto;
+}
+
+.settings-toggle {
+  width: 40px;
+  height: 40px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px 16px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.settings-toggle.active,
+.settings-toggle:hover {
+  border-color: var(--ink);
+}
+
+.settings-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 10;
+  width: min(340px, 90vw);
   background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 14px;
+  text-align: left;
+  animation: menu-in 0.14s ease;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.settings-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
   border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.settings-tab {
+  border: none;
+  background: var(--bg);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.settings-tab.active {
+  background: var(--ink);
+  color: #fff;
 }
 
 .category-picker {
@@ -171,7 +238,73 @@ button {
   font-size: clamp(6rem, 30vw, 14rem);
   font-weight: 800;
   line-height: 1;
-  margin: 10px 0;
+  margin: 10px 0 clamp(24px, 6vw, 48px);
+}
+
+/* ---------- Stats bar ---------- */
+
+.stats-bar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px 0;
+}
+
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.stat b {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.stat-streak b {
+  color: var(--accent);
+}
+
+.stat-correct b {
+  color: var(--green);
+}
+
+.stat-wrong b {
+  color: var(--red);
+}
+
+/* ---------- Screen flash ---------- */
+
+.screen-flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  animation: flash-fade 0.7s ease-out forwards;
+}
+
+.screen-flash-correct {
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(31, 157, 85, 0.4) 100%);
+}
+
+.screen-flash-wrong {
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(211, 52, 45, 0.4) 100%);
+}
+
+@keyframes flash-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 /* ---------- Feedback ---------- */
@@ -227,6 +360,9 @@ button {
   min-width: 44px;
   height: 52px;
   padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 2px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
@@ -281,6 +417,11 @@ button {
 
 .letter-card {
   height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
@@ -289,7 +430,7 @@ button {
   font-weight: 700;
   color: var(--ink);
   cursor: pointer;
-  transition: transform 0.1s ease, opacity 0.15s ease;
+  transition: transform 0.1s ease, opacity 0.15s ease, border-color 0.15s ease;
 }
 
 .letter-card:active:not(:disabled) {
@@ -478,5 +619,90 @@ button {
   }
   .mode-card {
     flex: 1;
+  }
+}
+
+/* ---------- Hover states (mouse/desktop only) ---------- */
+
+@media (hover: hover) {
+  .chip:hover {
+    border-color: var(--ink);
+  }
+  .difficulty-btn:hover:not(.active) {
+    border-color: var(--ink);
+  }
+  .settings-tab:hover:not(.active) {
+    color: var(--ink);
+  }
+  .letter-card:hover:not(:disabled) {
+    border-color: var(--ink);
+    transform: translateY(-2px);
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--ink);
+    transform: translateY(-2px);
+  }
+  .check-btn:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+  .mode-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px rgba(32, 26, 23, 0.12);
+  }
+}
+
+/* ---------- Desktop layout ---------- */
+
+@media (min-width: 860px) {
+  .topbar,
+  .stats-bar {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .stage {
+    padding-top: 48px;
+    gap: 28px;
+  }
+
+  .card-grid {
+    width: min(680px, 100%);
+  }
+
+  .options-grid {
+    width: min(640px, 100%);
+  }
+
+  .home {
+    padding-top: 72px;
+  }
+
+  .home-title {
+    font-size: 3.4rem;
+  }
+
+  .home-subtitle {
+    font-size: 1.25rem;
+  }
+
+  .home-modes {
+    width: min(820px, 100%);
+    gap: 22px;
+  }
+
+  .mode-card {
+    padding: 26px 24px;
+  }
+
+  .mode-card-emoji {
+    font-size: 2.2rem;
+  }
+
+  .mode-card-title {
+    font-size: 1.3rem;
+  }
+
+  .mode-card-desc {
+    font-size: 0.95rem;
   }
 }

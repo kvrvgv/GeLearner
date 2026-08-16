@@ -4,6 +4,8 @@ import { useData } from "../context/DataContext";
 import { useShuffledQueue } from "../hooks/useShuffledQueue";
 import { CategoryPicker } from "../components/CategoryPicker";
 import { FeedbackBanner, type FeedbackState } from "../components/FeedbackBanner";
+import { SettingsMenu } from "../components/SettingsMenu";
+import { ScreenFlash } from "../components/ScreenFlash";
 import type { Word } from "../types";
 
 function normalize(s: string): string {
@@ -77,15 +79,24 @@ export default function Mode3Type() {
       <header className="topbar">
         <Link to="/" className="back-btn">← Меню</Link>
         <h1 className="mode-title">Напиши слово по-русски</h1>
+        <SettingsMenu
+          tabs={[
+            {
+              key: "topics",
+              label: "Темы",
+              content: (
+                <CategoryPicker
+                  categories={categories}
+                  selected={selectedCategories}
+                  onChange={setSelectedCategories}
+                />
+              ),
+            },
+          ]}
+        />
       </header>
 
-      <div className="settings-panel">
-        <CategoryPicker
-          categories={categories}
-          selected={selectedCategories}
-          onChange={setSelectedCategories}
-        />
-      </div>
+      <ScreenFlash state={feedback} />
 
       <div className="stage">
         <div className="word-display">{word.georgian_text}</div>

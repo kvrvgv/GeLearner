@@ -7,6 +7,8 @@ import { shuffle } from "../utils/shuffle";
 import { CategoryPicker } from "../components/CategoryPicker";
 import { DifficultyPicker } from "../components/DifficultyPicker";
 import { FeedbackBanner, type FeedbackState } from "../components/FeedbackBanner";
+import { SettingsMenu } from "../components/SettingsMenu";
+import { ScreenFlash } from "../components/ScreenFlash";
 import type { Word } from "../types";
 
 type Difficulty = "no_extra" | "with_extra";
@@ -152,23 +154,38 @@ export default function Mode1Spell() {
       <header className="topbar">
         <Link to="/" className="back-btn">← Меню</Link>
         <h1 className="mode-title">Собери слово по буквам</h1>
-      </header>
-
-      <div className="settings-panel">
-        <CategoryPicker
-          categories={categories}
-          selected={selectedCategories}
-          onChange={setSelectedCategories}
-        />
-        <DifficultyPicker
-          value={difficulty}
-          onChange={setDifficulty}
-          options={[
-            { value: "no_extra", label: "Без лишних букв" },
-            { value: "with_extra", label: "С лишними буквами" },
+        <SettingsMenu
+          tabs={[
+            {
+              key: "topics",
+              label: "Темы",
+              content: (
+                <CategoryPicker
+                  categories={categories}
+                  selected={selectedCategories}
+                  onChange={setSelectedCategories}
+                />
+              ),
+            },
+            {
+              key: "difficulty",
+              label: "Сложность",
+              content: (
+                <DifficultyPicker
+                  value={difficulty}
+                  onChange={setDifficulty}
+                  options={[
+                    { value: "no_extra", label: "Без лишних букв" },
+                    { value: "with_extra", label: "С лишними буквами" },
+                  ]}
+                />
+              ),
+            },
           ]}
         />
-      </div>
+      </header>
+
+      <ScreenFlash state={feedback} />
 
       <div className="stage">
         <div className="word-display">{word.georgian_text}</div>
