@@ -409,14 +409,18 @@ button {
 }
 
 .card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
   width: min(600px, 100%);
 }
 
 .letter-card {
+  flex: 0 0 auto;
+  min-width: 56px;
   height: 56px;
+  padding: 0 10px;
   display: flex;
   align-items: center;
   justify-content: center;
