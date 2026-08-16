@@ -30,6 +30,8 @@ interface AnswerTile {
   text: string;
 }
 
+type AnswerSlot = AnswerTile | null;
+
 function buildPool(chunks: string[], extraTranslits: string[], difficulty: Difficulty): Card[] {
   const cards: Card[] = chunks.map((text, i) => ({
     uid: `req-${i}-${Math.random().toString(36).slice(2)}`,
@@ -82,7 +84,7 @@ export default function Mode1Spell() {
   const [word, setWord] = useState<Word | null>(null);
   const [tokens, setTokens] = useState<WordToken[]>([]);
   const [pool, setPool] = useState<Card[]>([]);
-  const [answer, setAnswer] = useState<AnswerTile[]>([]);
+  const [answer, setAnswer] = useState<AnswerSlot[]>([]);
   const [feedback, setFeedback] = useState<FeedbackState>("idle");
   const timeoutRef = useRef<number | null>(null);
 
@@ -99,7 +101,7 @@ export default function Mode1Spell() {
     setWord(w);
     setTokens(toks);
     setPool(buildPool(chunks, allTranslits, difficulty));
-    setAnswer([]);
+    setAnswer(Array(chunks.length).fill(null));
     setFeedback("idle");
   }
 
@@ -127,7 +129,7 @@ export default function Mode1Spell() {
 
   const targetLength = requiredChunks(tokens).length;
 
-  function reconstruct(tiles: AnswerTile[]): string {
+  function reconstruct(tiles: AnswerSlot[]): string {
     let i = 0;
     let out = "";
     for (const t of tokens) {
@@ -142,12 +144,15 @@ export default function Mode1Spell() {
   }
 
   function handleCardTap(card: Card) {
-    if (feedback !== "idle" || card.used || answer.length >= targetLength) return;
+    if (feedback !== "idle" || card.used) return;
+    const emptyIndex = answer.findIndex((t) => t === null);
+    if (emptyIndex === -1) return;
+
     setPool((prev) => prev.map((c) => (c.uid === card.uid ? { ...c, used: true } : c)));
-    const nextAnswer = [...answer, { uid: card.uid, text: card.text }];
+    const nextAnswer = answer.map((t, i) => (i === emptyIndex ? { uid: card.uid, text: card.text } : t));
     setAnswer(nextAnswer);
 
-    if (nextAnswer.length === targetLength && word) {
+    if (nextAnswer.every((t) => t !== null) && word) {
       const guess = reconstruct(nextAnswer);
       if (guess === word.ru_translit) {
         setFeedback("correct");
@@ -166,7 +171,8 @@ export default function Mode1Spell() {
   function handleTileTap(index: number) {
     if (feedback !== "idle") return;
     const tile = answer[index];
-    setAnswer((prev) => prev.filter((_, i) => i !== index));
+    if (!tile) return;
+    setAnswer((prev) => prev.map((t, i) => (i === index ? null : t)));
     setPool((prev) => prev.map((c) => (c.uid === tile.uid ? { ...c, used: false } : c)));
   }
 
@@ -201,13 +207,14 @@ export default function Mode1Spell() {
           pendingKeyRef.current = null;
           return;
         }
-        if (answer.length > 0) handleTileTap(answer.length - 1);
+        const lastFilled = answer.findLastIndex((t) => t !== null);
+        if (lastFilled !== -1) handleTileTap(lastFilled);
         return;
       }
 
       const key = e.key.toLowerCase();
       if (!/^[а-яё]$/.test(key)) return;
-      if (answer.length >= targetLength) return;
+      if (!answer.some((t) => t === null)) return;
 
       const pending = pendingKeyRef.current;
       if (pending) {
