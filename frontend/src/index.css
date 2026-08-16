@@ -653,6 +653,11 @@ button {
   cursor: default;
 }
 
+.letter-card.hidden-unused {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* ---------- Mode 2: options ---------- */
 
 .options-grid {

@@ -431,7 +431,9 @@ export default function Mode5Phrase() {
             <button
               key={card.uid}
               type="button"
-              className={`letter-card ${card.used ? "used" : ""}`}
+              className={`letter-card ${card.used ? "used" : ""} ${
+                !card.used && feedback !== "idle" && !autoAdvance ? "hidden-unused" : ""
+              }`}
               onClick={() => handleCardTap(card)}
               disabled={card.used || feedback !== "idle"}
             >
