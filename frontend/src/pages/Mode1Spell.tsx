@@ -1,0 +1,211 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { useData } from "../context/DataContext";
+import { useShuffledQueue } from "../hooks/useShuffledQueue";
+import { tokenizeWord, requiredChunks, type WordToken } from "../utils/tokenize";
+import { shuffle } from "../utils/shuffle";
+import { CategoryPicker } from "../components/CategoryPicker";
+import { DifficultyPicker } from "../components/DifficultyPicker";
+import { FeedbackBanner, type FeedbackState } from "../components/FeedbackBanner";
+import type { Word } from "../types";
+
+type Difficulty = "no_extra" | "with_extra";
+
+interface Card {
+  uid: string;
+  text: string;
+  used: boolean;
+}
+
+interface AnswerTile {
+  uid: string;
+  text: string;
+}
+
+function buildPool(chunks: string[], extraTranslits: string[], difficulty: Difficulty): Card[] {
+  const cards: Card[] = chunks.map((text, i) => ({
+    uid: `req-${i}-${Math.random().toString(36).slice(2)}`,
+    text,
+    used: false,
+  }));
+
+  if (difficulty === "with_extra" && extraTranslits.length > 0) {
+    const extraCount = Math.min(6, Math.max(3, Math.round(chunks.length * 0.6)));
+    const distinctExtras = extraTranslits.filter((t) => !chunks.includes(t));
+    const pool = distinctExtras.length >= extraCount ? distinctExtras : extraTranslits;
+    const picked = shuffle(pool).slice(0, extraCount);
+    picked.forEach((text, i) => {
+      cards.push({ uid: `extra-${i}-${Math.random().toString(36).slice(2)}`, text, used: false });
+    });
+  }
+
+  return shuffle(cards);
+}
+
+export default function Mode1Spell() {
+  const { categories, words, lettersByChar, letters, loading, error } = useData();
+
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [difficulty, setDifficulty] = useState<Difficulty>("no_extra");
+
+  useEffect(() => {
+    if (categories.length > 0 && selectedCategories.size === 0) {
+      setSelectedCategories(new Set(categories.map((c) => c.slug)));
+    }
+  }, [categories, selectedCategories.size]);
+
+  const filteredWords = useMemo(
+    () => words.filter((w) => selectedCategories.has(w.category)),
+    [words, selectedCategories]
+  );
+
+  const { next } = useShuffledQueue<Word>(filteredWords);
+
+  const [word, setWord] = useState<Word | null>(null);
+  const [tokens, setTokens] = useState<WordToken[]>([]);
+  const [pool, setPool] = useState<Card[]>([]);
+  const [answer, setAnswer] = useState<AnswerTile[]>([]);
+  const [feedback, setFeedback] = useState<FeedbackState>("idle");
+  const timeoutRef = useRef<number | null>(null);
+
+  const allTranslits = useMemo(() => letters.map((l) => l.ru_translit), [letters]);
+
+  function loadWord(w: Word | null) {
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    if (!w) {
+      setWord(null);
+      return;
+    }
+    const toks = tokenizeWord(w.georgian_text, lettersByChar);
+    const chunks = requiredChunks(toks);
+    setWord(w);
+    setTokens(toks);
+    setPool(buildPool(chunks, allTranslits, difficulty));
+    setAnswer([]);
+    setFeedback("idle");
+  }
+
+  useEffect(() => {
+    if (filteredWords.length > 0 && lettersByChar.size > 0) {
+      loadWord(next());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredWords, lettersByChar, difficulty]);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  const targetLength = requiredChunks(tokens).length;
+
+  function reconstruct(tiles: AnswerTile[]): string {
+    let i = 0;
+    let out = "";
+    for (const t of tokens) {
+      if (t.type === "literal") {
+        out += t.char;
+      } else {
+        out += tiles[i]?.text ?? "";
+        i += 1;
+      }
+    }
+    return out;
+  }
+
+  function handleCardTap(card: Card) {
+    if (feedback !== "idle" || card.used || answer.length >= targetLength) return;
+    setPool((prev) => prev.map((c) => (c.uid === card.uid ? { ...c, used: true } : c)));
+    const nextAnswer = [...answer, { uid: card.uid, text: card.text }];
+    setAnswer(nextAnswer);
+
+    if (nextAnswer.length === targetLength && word) {
+      const guess = reconstruct(nextAnswer);
+      if (guess === word.ru_translit) {
+        setFeedback("correct");
+        timeoutRef.current = window.setTimeout(() => loadWord(next()), 1900);
+      } else {
+        setFeedback("wrong");
+        timeoutRef.current = window.setTimeout(() => {
+          setPool((prev) => prev.map((c) => ({ ...c, used: false })));
+          setAnswer([]);
+          setFeedback("idle");
+        }, 1100);
+      }
+    }
+  }
+
+  function handleTileTap(index: number) {
+    if (feedback !== "idle") return;
+    const tile = answer[index];
+    setAnswer((prev) => prev.filter((_, i) => i !== index));
+    setPool((prev) => prev.map((c) => (c.uid === tile.uid ? { ...c, used: false } : c)));
+  }
+
+  if (loading) return <div className="stage-center">Загрузка...</div>;
+  if (error) return <div className="stage-center">Ошибка: {error}</div>;
+  if (!word) return <div className="stage-center">Нет слов для выбранных тем</div>;
+
+  return (
+    <div className="app-shell">
+      <header className="topbar">
+        <Link to="/" className="back-btn">← Меню</Link>
+        <h1 className="mode-title">Собери слово по буквам</h1>
+      </header>
+
+      <div className="settings-panel">
+        <CategoryPicker
+          categories={categories}
+          selected={selectedCategories}
+          onChange={setSelectedCategories}
+        />
+        <DifficultyPicker
+          value={difficulty}
+          onChange={setDifficulty}
+          options={[
+            { value: "no_extra", label: "Без лишних букв" },
+            { value: "with_extra", label: "С лишними буквами" },
+          ]}
+        />
+      </div>
+
+      <div className="stage">
+        <div className="word-display">{word.georgian_text}</div>
+
+        <div className={`answer-slots ${feedback}`}>
+          {Array.from({ length: targetLength }).map((_, i) => {
+            const tile = answer[i];
+            return (
+              <button
+                key={i}
+                type="button"
+                className={`slot ${tile ? "filled" : ""}`}
+                onClick={() => tile && handleTileTap(i)}
+                disabled={!tile}
+              >
+                {tile?.text ?? ""}
+              </button>
+            );
+          })}
+        </div>
+
+        <FeedbackBanner state={feedback} translation={word.translation_ru} />
+
+        <div className="card-grid">
+          {pool.map((card) => (
+            <button
+              key={card.uid}
+              type="button"
+              className={`letter-card ${card.used ? "used" : ""}`}
+              onClick={() => handleCardTap(card)}
+              disabled={card.used || feedback !== "idle"}
+            >
+              {card.text}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,482 @@
+:root {
+  color-scheme: light;
+  --bg: #faf7f2;
+  --surface: #ffffff;
+  --ink: #201a17;
+  --muted: #7a6f68;
+  --accent: #d3342d;
+  --accent-ink: #ffffff;
+  --border: #e7ddd3;
+  --green: #1f9d55;
+  --green-bg: #e7f8ee;
+  --red: #d3342d;
+  --red-bg: #fdeceb;
+  --shadow: 0 8px 24px rgba(32, 26, 23, 0.08);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Topbar ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.back-btn {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.back-btn:hover {
+  color: var(--ink);
+}
+
+.mode-title {
+  font-size: 1.05rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+/* ---------- Settings panel ---------- */
+
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.category-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.chip-all {
+  font-weight: 700;
+}
+
+.difficulty-picker {
+  display: flex;
+  gap: 8px;
+}
+
+.difficulty-btn {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.difficulty-btn.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+/* ---------- Stage ---------- */
+
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  padding: 28px 16px 40px;
+  text-align: center;
+}
+
+.stage-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+.word-display {
+  font-size: clamp(2.4rem, 10vw, 5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  word-break: break-word;
+  padding: 0 8px;
+}
+
+.letter-display {
+  font-size: clamp(6rem, 30vw, 14rem);
+  font-weight: 800;
+  line-height: 1;
+  margin: 10px 0;
+}
+
+/* ---------- Feedback ---------- */
+
+.feedback-banner {
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 14px;
+  padding: 8px 20px;
+  font-weight: 700;
+  width: min(420px, 100%);
+}
+
+.feedback-banner.idle {
+  min-height: 20px;
+}
+
+.feedback-banner.correct {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.feedback-banner.wrong {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.feedback-title {
+  font-size: 1.05rem;
+}
+
+.feedback-translation {
+  font-size: 0.95rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* ---------- Mode 1: answer slots + cards ---------- */
+
+.answer-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  width: min(600px, 100%);
+}
+
+.slot {
+  min-width: 44px;
+  height: 52px;
+  padding: 0 6px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: default;
+}
+
+.slot.filled {
+  border-color: var(--ink);
+  background: #fff;
+  cursor: pointer;
+}
+
+.slot.filled:active {
+  transform: scale(0.95);
+}
+
+.answer-slots.correct .slot.filled {
+  border-color: var(--green);
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.answer-slots.wrong .slot.filled {
+  border-color: var(--red);
+  background: var(--red-bg);
+  color: var(--red);
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: 10px;
+  width: min(600px, 100%);
+}
+
+.letter-card {
+  height: 56px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.15s ease;
+}
+
+.letter-card:active:not(:disabled) {
+  transform: scale(0.93);
+}
+
+.letter-card.used {
+  visibility: hidden;
+}
+
+.letter-card:disabled:not(.used) {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---------- Mode 2: options ---------- */
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  width: min(560px, 100%);
+}
+
+.option-btn {
+  padding: 18px 10px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.option-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.option-btn:disabled {
+  cursor: default;
+}
+
+.option-btn.correct {
+  border-color: var(--green);
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.option-btn.wrong {
+  border-color: var(--red);
+  background: var(--red-bg);
+  color: var(--red);
+  animation: shake 0.3s ease;
+}
+
+/* ---------- Mode 3: text input ---------- */
+
+.text-input-row {
+  display: flex;
+  gap: 10px;
+  width: min(480px, 100%);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.big-input {
+  flex: 1;
+  min-width: 200px;
+  font-size: 1.3rem;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  outline: none;
+}
+
+.big-input:focus {
+  border-color: var(--ink);
+}
+
+.text-input-row.correct .big-input {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.text-input-row.wrong .big-input {
+  border-color: var(--red);
+  color: var(--red);
+  animation: shake 0.3s ease;
+}
+
+.check-btn {
+  padding: 14px 22px;
+  border-radius: 12px;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.check-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---------- Home ---------- */
+
+.home {
+  align-items: center;
+  justify-content: flex-start;
+  padding: 48px 20px;
+  gap: 36px;
+}
+
+.home-hero {
+  text-align: center;
+}
+
+.home-title {
+  font-size: 2.6rem;
+  margin: 0;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.home-subtitle {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+.home-stats {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.home-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(440px, 100%);
+}
+
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.12s ease;
+}
+
+.mode-card:active {
+  transform: scale(0.97);
+}
+
+.mode-card-emoji {
+  font-size: 1.8rem;
+}
+
+.mode-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.mode-card-desc {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+@media (min-width: 720px) {
+  .home-modes {
+    flex-direction: row;
+  }
+  .mode-card {
+    flex: 1;
+  }
+}
