@@ -61,3 +61,42 @@ npm run dev
 `WORDS` в `backend/learning/management/commands/seed_data.py` и повторно
 запустить `python manage.py seed_data` (команда идемпотентна — существующие
 слова обновятся, а не задублируются).
+
+## Деплой
+
+Автодеплой на прод настроен через GitHub Actions
+(`.github/workflows/deploy.yml`): при пуше в `main` раннер собирает фронтенд,
+синкает репозиторий на сервер по SSH (`rsync`) и запускает
+`deploy/deploy.sh`, который на сервере идемпотентно:
+
+- ставит/обновляет python-venv и зависимости backend'а;
+- создаёт `backend/.env` при первом запуске (генерирует `SECRET_KEY`,
+  выставляет `DJANGO_DEBUG=false` и домен в `DJANGO_ALLOWED_HOSTS`) — при
+  повторных запусках не трогает;
+- прогоняет `migrate`, `seed_data`, `collectstatic`;
+- прописывает/обновляет systemd-юнит `gelerner.service` (gunicorn на
+  `127.0.0.1:8731`) и nginx-конфиг для домена, перезапускает оба;
+- при первом запуске получает Let's Encrypt сертификат через `certbot --nginx`
+  (дальше пропускает этот шаг, если сертификат уже есть).
+
+Архитектура на сервере: один и тот же домен, nginx раздаёт собранный React
+(`frontend/dist`) напрямую как статику, а `/api/`, `/admin/` и `/static/`
+проксирует на gunicorn — единый источник (same-origin), CORS в проде не
+участвует.
+
+### Нужные секреты репозитория
+
+В `Settings → Secrets and variables → Actions` репозитория нужно добавить:
+
+| Secret            | Значение                                                        |
+|--------------------|------------------------------------------------------------------|
+| `DEPLOY_HOST`      | IP или хост сервера                                              |
+| `DEPLOY_USER`      | `deploy`                                                          |
+| `DEPLOY_SSH_KEY`   | приватный ключ, у которого публичная пара уже в `~deploy/.ssh/authorized_keys` на сервере |
+
+Путь на сервере (`/home/deploy/apps/gelerner`), домен (`ge.zlgvpn.org`) и порт
+gunicorn (`8731`) захардкожены в `.github/workflows/deploy.yml` и
+`deploy/deploy.sh` — при необходимости поменять один раз в обоих местах.
+
+Задеплоить вручную (без пуша) можно через вкладку **Actions → Deploy → Run
+workflow** в GitHub.
