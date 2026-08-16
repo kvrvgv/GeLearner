@@ -9,7 +9,7 @@ import { SettingsMenu } from "../components/SettingsMenu";
 import { ScreenFlash } from "../components/ScreenFlash";
 import { StatsBar } from "../components/StatsBar";
 import { useTheme } from "../hooks/useTheme";
-import type { Word } from "../types";
+import type { Word, WordLevelFilter } from "../types";
 
 function normalize(s: string): string {
   return s.trim().toLowerCase().replace(/\s+/g, " ").replace(/ё/g, "е");
@@ -22,6 +22,7 @@ export default function Mode3Type() {
   const { categories, words, loading, error } = useData();
 
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [wordLevel, setWordLevel] = useState<WordLevelFilter>("all");
 
   useEffect(() => {
     if (categories.length > 0 && selectedCategories.size === 0) {
@@ -30,8 +31,11 @@ export default function Mode3Type() {
   }, [categories, selectedCategories.size]);
 
   const filteredWords = useMemo(
-    () => words.filter((w) => selectedCategories.has(w.category)),
-    [words, selectedCategories]
+    () =>
+      words.filter(
+        (w) => selectedCategories.has(w.category) && (wordLevel === "all" || w.level === wordLevel)
+      ),
+    [words, selectedCategories, wordLevel]
   );
 
   const { next } = useShuffledQueue<Word>(filteredWords);
@@ -111,6 +115,21 @@ export default function Mode3Type() {
                   categories={categories}
                   selected={selectedCategories}
                   onChange={setSelectedCategories}
+                />
+              ),
+            },
+            {
+              key: "level",
+              label: "Уровень слов",
+              content: (
+                <DifficultyPicker
+                  value={wordLevel}
+                  onChange={setWordLevel}
+                  options={[
+                    { value: "all", label: "Все" },
+                    { value: "basic", label: "Базовые" },
+                    { value: "advanced", label: "Сложные" },
+                  ]}
                 />
               ),
             },

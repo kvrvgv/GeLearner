@@ -723,6 +723,63 @@ button {
   cursor: default;
 }
 
+/* ---------- Mode 4: match pairs ---------- */
+
+.match-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+  width: min(560px, 100%);
+}
+
+.match-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.match-tile {
+  padding: 12px 10px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.1s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.match-tile-ka {
+  font-size: 1.1rem;
+}
+
+.match-tile-ru {
+  font-size: 0.9rem;
+}
+
+.match-tile:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.match-tile.selected {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.match-tile.wrong {
+  border-color: var(--red);
+  background: var(--red-bg);
+  color: var(--red);
+  animation: shake 0.5s ease-in-out;
+}
+
+.match-tile.matched {
+  visibility: hidden;
+}
+
 /* ---------- Home ---------- */
 
 .home {
@@ -783,8 +840,8 @@ button {
 }
 
 .home-modes {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 16px;
   width: min(440px, 100%);
 }
@@ -823,10 +880,7 @@ button {
 
 @media (min-width: 720px) {
   .home-modes {
-    flex-direction: row;
-  }
-  .mode-card {
-    flex: 1;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -854,6 +908,10 @@ button {
     transform: translateY(-2px);
   }
   .option-btn:hover:not(:disabled) {
+    border-color: var(--ink);
+    transform: translateY(-2px);
+  }
+  .match-tile:hover:not(:disabled) {
     border-color: var(--ink);
     transform: translateY(-2px);
   }

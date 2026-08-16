@@ -3,6 +3,7 @@ import { useData } from "../context/DataContext";
 import { SettingsMenu } from "../components/SettingsMenu";
 import { DifficultyPicker } from "../components/DifficultyPicker";
 import { useTheme } from "../hooks/useTheme";
+import { pluralizeRu } from "../utils/pluralize";
 
 export default function Home() {
   const { words, letters, loading } = useData();
@@ -37,7 +38,8 @@ export default function Home() {
         <p className="home-subtitle">Учим грузинский алфавит</p>
         {!loading && (
           <p className="home-stats">
-            {letters.length} букв · {words.length} слов
+            {letters.length} {pluralizeRu(letters.length, "буква", "буквы", "букв")} ·{" "}
+            {words.length} {pluralizeRu(words.length, "слово", "слова", "слов")}
           </p>
         )}
       </div>
@@ -64,6 +66,14 @@ export default function Home() {
           <span className="mode-card-title">Напиши слово</span>
           <span className="mode-card-desc">
             Впиши, как слово читается по-русски
+          </span>
+        </Link>
+
+        <Link to="/mode4" className="mode-card">
+          <span className="mode-card-emoji">🔗</span>
+          <span className="mode-card-title">Сопоставь слово</span>
+          <span className="mode-card-desc">
+            Найди пару: грузинское слово и его перевод
           </span>
         </Link>
       </div>
