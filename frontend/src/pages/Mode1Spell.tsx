@@ -82,7 +82,10 @@ export default function Mode1Spell() {
   const filteredWords = useMemo(
     () =>
       words.filter(
-        (w) => selectedCategories.has(w.category) && (wordLevel === "all" || w.level === wordLevel)
+        (w) =>
+          selectedCategories.has(w.category) &&
+          (wordLevel === "all" || w.level === wordLevel) &&
+          !w.georgian_text.includes(" ")
       ),
     [words, selectedCategories, wordLevel]
   );
