@@ -90,7 +90,7 @@ export default function Mode1Spell() {
     [words, selectedCategories, wordLevel]
   );
 
-  const { next } = useShuffledQueue<Word>(filteredWords);
+  const { next } = useShuffledQueue<Word>(filteredWords, "mode1-words");
 
   const [word, setWord] = useState<Word | null>(null);
   const [tokens, setTokens] = useState<WordToken[]>([]);

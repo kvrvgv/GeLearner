@@ -38,7 +38,7 @@ export default function Mode3Type() {
     [words, selectedCategories, wordLevel]
   );
 
-  const { next } = useShuffledQueue<Word>(filteredWords);
+  const { next } = useShuffledQueue<Word>(filteredWords, "mode3-words");
 
   const [word, setWord] = useState<Word | null>(null);
   const [value, setValue] = useState("");

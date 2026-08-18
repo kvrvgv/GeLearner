@@ -50,7 +50,7 @@ export default function Mode4Match() {
     [words, selectedCategories, wordLevel]
   );
 
-  const { next } = useShuffledQueue<Word>(filteredWords);
+  const { next } = useShuffledQueue<Word>(filteredWords, "mode4-words");
 
   const [leftTiles, setLeftTiles] = useState<Tile[]>([]);
   const [rightTiles, setRightTiles] = useState<Tile[]>([]);
