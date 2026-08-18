@@ -53,8 +53,14 @@ function buildPool(chunks: string[], extraTranslits: string[], difficulty: Diffi
   return shuffle(cards);
 }
 
+const PHRASE_CATEGORY = "voprosy";
+
 export default function Mode1Spell() {
-  const { categories, words, lettersByChar, letters, loading, error } = useData();
+  const { categories: allCategories, words, lettersByChar, letters, loading, error } = useData();
+  const categories = useMemo(
+    () => allCategories.filter((c) => c.slug !== PHRASE_CATEGORY),
+    [allCategories]
+  );
 
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [wordLevel, setWordLevel] = useState<WordLevelFilter>("all");
