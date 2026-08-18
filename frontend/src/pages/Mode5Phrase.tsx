@@ -71,7 +71,7 @@ export default function Mode5Phrase() {
     [words]
   );
 
-  const { next } = useShuffledQueue<Word>(filteredWords);
+  const { next } = useShuffledQueue<Word>(filteredWords, "mode5-phrases");
 
   const [word, setWord] = useState<Word | null>(null);
   const [tokens, setTokens] = useState<WordToken[]>([]);

@@ -18,7 +18,7 @@ export default function Mode2LetterQuiz() {
   const { letters, loading, error } = useData();
   const [difficulty, setDifficulty] = useState<LetterDifficulty>("easy");
   const [difficultyChosen, setDifficultyChosen] = useState(false);
-  const { next } = useShuffledQueue<Letter>(letters);
+  const { next } = useShuffledQueue<Letter>(letters, "mode2-letters");
 
   const [letter, setLetter] = useState<Letter | null>(null);
   const [options, setOptions] = useState<string[]>([]);
